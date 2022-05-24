@@ -46,8 +46,15 @@ return nameRegex.test(name);
 
 //==Password Validation
 let isValidPassword=function(password){
-    let regexPassword=/^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[@$!%?&])[A-Za-z\d@$!%?&]{8,15}$/
+    let regexPassword=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/
     return regexPassword.test(password);
+}
+
+//************************** */
+
+let isValidPinCode = function(pincode){
+    let regexPin =/^[1-9]{1}[0-9]{5}$/
+    return regexPin.test(pincode)
 }
 //************************//
 
@@ -57,4 +64,4 @@ let isValidPassword=function(password){
 //   return  title.indexOf(value) !== -1;
 // }
 
-module.exports={isValid,isValidEmail,isValidMobile,isValidName,isValidObjectId,isValidPassword,isValidRequestBody}
+module.exports={isValid,isValidEmail,isValidMobile,isValidName,isValidObjectId,isValidPassword,isValidRequestBody,isValidPinCode}
