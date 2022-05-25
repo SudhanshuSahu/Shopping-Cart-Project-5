@@ -44,55 +44,48 @@ const authentication = async function (req, res, next) {
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// const authorisation = async function (req, res, next) {
-//   try {
-//     // bookId sent through path params
-//     let bookId = req.params.bookId;
+const authorisation = async function (req, res, next) {
+  try {
+    // userId sent through path params
+    let userId = req.params.userId;
 
-//     // CASE-1: bookId is empty
-//     if (bookId === ":bookId") {
-//       return res
-//         .status(400)
-//         .send({ status: false, msg: "Please enter bookId to proceed!" });
-//     }
-//     // CASE-2: bookId is not an ObjectId
-//     else if (!isValidObjectId(bookId)) {
-//       return res.status(400).send({ status: false, msg: "bookId is invalid!" });
-//     }
-//     // CASE-3: bookId does not exist (in our database)
-//     let book = await bookModel.findOne({ _id: bookId }); // database call
-//     console.log(book);
-//     if (!book) {
-//       return res.status(400).send({
-//         status: false,
-//         msg: "We are sorry; Given bookId does not exist!",
-//       });
-//     }
-//     // CASE-4: bookId exists but is deleted (isDeleted: true)
-//     if (book && book.isDeleted) {
-//       return res.status(404).send({
-//         status: false,
-//         message: "We are sorry; Given bookId does not exist", // avoided | message: "bookId is deleted" | considering privacy (of user)
-//       });
-//     }
+    // CASE-1: useId is empty
+    if (userId === ":userId") {
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please enter userId to proceed!" });
+    }
+    // CASE-2: userId is not an ObjectId
+    else if (!isValidObjectId(userId)) {
+      return res.status(400).send({ status: false, msg: "userId is invalid!" });
+    }
+    // CASE-3: userId does not exist (in our database)
+    let user = await userModel.findOne({ _id: userId }); // database call
+    console.log(user);
+    if (!user) {
+      return res.status(400).send({
+        status: false,
+        msg: "We are sorry; Given userId does not exist!",
+      });
+    }
 
-//     // Authorisation: userId in token is compared with userId against bookId
-//     if (req.userId !== book.userId.toString()) {
-//       return res.status(401).send({
-//         status: false,
-//         msg: `Authorisation Failed! You are logged in ${req.userId} not as ${book.userId}`,
-//       });
-//     } else if (req.userId === book.userId.toString()) {
-//       next();
-//     }
-//   } catch (err) {
-//     res.status(500).send({ msg: "Internal Server Error", error: err.message });
-//   }
-// };
+    // Authorisation: userId in token is compared with userId against bookId
+    if (req.userId !== userId) {
+      return res.status(403).send({
+        status: false,
+        msg: `Authorisation Failed! You are logged in ${req.userId} not as ${userId}`,
+      });
+    } else if (req.userId === userId) {
+      next();
+    }
+  } catch (err) {
+    res.status(500).send({ msg: "Internal Server Error", error: err.message });
+  }
+};
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
-module.exports = { authentication };
+module.exports = { authentication , authorisation};
 
 
 
