@@ -10,7 +10,7 @@ const authentication = async function (req, res, next) {
   try {
 
      let token = (req.headers.authorization).split(" ")
-    console.log(token)
+    
 
     // if token is not provided
     if (!token) {
@@ -36,6 +36,7 @@ const authentication = async function (req, res, next) {
       }
     }
     )
+    
 
   } catch (err) {
     res.status(500).send({ msg: "Internal Server Error", error: err.message });
