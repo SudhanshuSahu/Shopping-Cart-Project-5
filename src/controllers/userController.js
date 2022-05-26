@@ -27,7 +27,7 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "fname is required" })
         }
         if (!isValidName(fname)) {
-            return res.status(400).send({ status: false, message: "First name should be alphabetical " })
+            return res.status(400).send({ status: false, message: "First name should be alphabetical" })
         }
         if (!isValid(lname)) {
             return res.status(400).send({ status: false, message: "lname is required" })
@@ -80,13 +80,18 @@ const createUser = async function (req, res) {
         if (!requestBody.address.shipping.pincode) return res.status(400).send({ status: false, message: "Pincode is required of shipping address" });
 
 
-        if (!isValid(requestBody.address.billing)) return res.status(400).send({
-            status: false, message: "Billing address should be required"})
+        if (!isValid(requestBody.address.billing)) return res.status(400).send({ status: false, message: "Billing address should be required" })
+
+        if (!isValid(requestBody.address.billing.street)) return res.status(400).send({ status: false, message: "Street is required of billing address" })
+
+        if (!isValid(requestBody.address.billing.city)) return res.status(400).send({ status: false, message: "City is required of billing address" })
+
+        if (!isValid(requestBody.address.billing.pincode)) return res.status(400).send({ status: false, message: "Pincode is required of billing address" })
 
 
 
         let files = req.files
-        if(files && files.length > 0) {
+        if (files && files.length > 0) {
             let uploadedFileURL = await uploadFile(files[0]);
             //res.status(201).send({ status: true,msg: "file uploaded succesfully", data: uploadedFileURL });
             requestBody.profileImage = uploadedFileURL
@@ -99,12 +104,12 @@ const createUser = async function (req, res) {
             return res.status(201).send({ status: true, message: "user created successfully", data: createUserData })
         }
         else {
-    return res.status(400).send({ msg: "No file Found" })
+            return res.status(400).send({ msg: "No file Found" })
 
-}
+        }
     } catch (err) {
-    return res.status(500).send({ status: false, message: err.message })
-}
+        return res.status(500).send({ status: false, message: err.message })
+    }
 
 }
 
