@@ -29,9 +29,9 @@ const createProduct = async function (req, res) {
     if (!isValid(price)) {
         return res.status(400).send({ status: true, msg: "price is mandatory" })
     }
-   // if (!isValidNum(price)) {
-      //  return res.status(400).send({ status: true, msg: "price Should be numeric" })
-   // }
+   if (!isValidNum(price)) {
+       return res.status(400).send({ status: true, msg: "price Should be numeric" })
+   }
 
     if (!isValid(currencyId)) {
         return res.status(400).send({ status: true, msg: "CurrencyId is mandatory" })
@@ -45,19 +45,19 @@ const createProduct = async function (req, res) {
     //     res.status(400).send({ status: false, msg: "currencyFormat should be in ₹" })
     //     return
     // }
-   // if (!isValidNum(installments)) {
-       // return res.status(400).send({ status: true, msg: "Installments Should be in number" })
-  //  }
-
+    
     // if(!isValid(currencyFormat)){
-    //     return res.status(400).send({status:true,msg:"description is mandatory"})
-    // }
+        //     return res.status(400).send({status:true,msg:"currencyFormat is mandatory"})
+        // }
+        
+        if (!isValidNum(installments)) {
+            return res.status(400).send({ status: true, msg: "Installments Should be in number" })
+        }
 
 
-
-   // if (!isValidEnum(availableSizes)) {
-        //return res.status(400).send({ status: false, message: `please provide available size from  ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
-   // }
+   if (!isValidEnum(availableSizes)) {
+        return res.status(400).send({ status: false, message: `please provide available size from  ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
+   }
 
 
     // Checking duplicate entry of title
@@ -80,6 +80,9 @@ const createProduct = async function (req, res) {
     }
 
 }
+
+//Get function to fetch the products
+
 const getproducts=async function(req,res){
 let filter=req.query
 let Name=filter.name
