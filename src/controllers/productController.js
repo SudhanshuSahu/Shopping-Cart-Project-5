@@ -3,7 +3,6 @@ const { uploadFile } = require("../AWS/aws")
 const { isValid,
     isValidRequestBody,
     isValidObjectId,
-    isValidEnum,
     isValidNum } = require("../validators/validator")
 
 //create product Function
@@ -55,93 +54,104 @@ const createProduct = async function (req, res) {
     }
 
 
-    if (!isValidEnum(availableSizes)) {
-        return res.status(400).send({ status: false, message: `please provide available size from  ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
-    }
 
+    if (availableSizes) {
+        let availableSize = availableSizes.toUpperCase().split(",")
+        console.log(availableSize);  // Creating an array
 
-    // Checking duplicate entry of title
-    let duplicateTitle = await productModel.find({ title: title })
-    if (duplicateTitle.length != 0) {
-        return res.status(400).send({ status: false, msg: "Title already exist" })
-    }
-
-    let files = req.files;
-    if (files && files.length > 0) {
-        let uploadedFileURL = await uploadFile(files[0]);
-        let productImage = uploadedFileURL
-
-        const product = {
-            title, description, price, currencyId, currencyFormat: "₹", isFreeShipping, productImage, style, availableSizes, installments
+      //  Enum validation on availableSizes
+      for (let i = 0; i < availableSize.length; i++) {
+        if (!(["S", "XS", "M", "X", "L", "XXL", "XL"]).includes(availableSize[i])) {
+            return res.status(400).send({ status: false, message: `Sizes should be ${["S", "XS", "M", "X", "L", "XXL", "XL"]}`})
         }
-        console.log(product);
-        let productData = await productModel.create(product)
-        return res.status(201).send({ status: true, msg: "Product created", data: productData })
     }
+    }
+
+
+
+// Checking duplicate entry of title
+let duplicateTitle = await productModel.find({ title: title })
+if (duplicateTitle.length != 0) {
+    return res.status(400).send({ status: false, msg: "Title already exist" })
+}
+
+let files = req.files;
+if (files && files.length > 0) {
+    let uploadedFileURL = await uploadFile(files[0]);
+    let productImage = uploadedFileURL
+
+    const product = {
+        title, description, price, currencyId, currencyFormat: "₹", isFreeShipping, productImage, style, availableSizes:availableSize, installments
+    }
+    console.log(product);
+    let productData = await productModel.create(product)
+    return res.status(201).send({ status: true, msg: "Product created", data: productData })
+}
 
 }
 
 //Get function to fetch the products
 
-const getproducts = async function (req, res) {
-    let filter = req.query
-    let Name = filter.name
-    let size = filter.size
-    let priceGreaterThan = filter.priceGreaterThan
-    let priceLessThan = filter.priceLessThan
-    if (Name) {
-        if (!isValid(Name)) return res.status(400).send({ msg: "please give valid input" })
-        const product = await productModel.find({ title: Name, isDeleted: false })
-        if (product.length == 0) return res.status(404).send({ msg: "product not found" })
-        return res.status(201).send({ msg: "All products", data: product })
-
+const getproducts=async function(req,res){
+let filter=req.query
+let Name=filter.name
+let size=filter.size
+let priceGreaterThan=filter.priceGreaterThan
+let priceLessThan=filter.priceLessThan
+const getproduct = { isDeleted: false };
+if (Name) {
+    if (!isValid(Name)) {
+        return res.status(400).send({ status: false, message: `User id ${Name} is not valid` })
     }
-    if (size) {
-        if (!isValid(size)) return res.status(400).send({ msg: "please give valid input" })
-        const product = await productModel.find({ availableSizes: size, isDeleted: false })
-        if (product.length == 0) return res.status(404).send({ msg: "product not found" })
-        return res.status(201).send({ msg: "All products", data: product })
-
-    } if (priceLessThan) {
-        if (!isValid(priceLessThan)) return res.status(400).send({ msg: "please give valid input" })
-        const product = await productModel.find({ price: { $lt: priceLessThan }, isDeleted: false }).sort({ price: -1 })
-        if (product.length == 0) return res.status(404).send({ msg: "product not found" })
-        return res.status(201).send({ msg: "All products", data: product })
-
-    } if (priceGreaterThan) {
-        if (!isValid(priceGreaterThan)) return res.status(400).send({ msg: "please give valid input" })
-        const product = await productModel.find({ price: { $gt: priceGreaterThan }, isDeleted: false }).sort({ price: 1 })
-        if (product.length == 0) return res.status(404).send({ msg: "product not found" })
-        return res.status(201).send({ msg: "All products", data: product })
-
-    } if (priceGreaterThan && priceLessThan) {
-        if (!isValid(priceGreaterThan)) return res.status(400).send({ msg: "please give valid input" })
-        if (!isValid(priceLessThan)) return res.status(400).send({ msg: "please give valid input" })
-
-        const product = await productModel.find({ price: { $gt: priceGreaterThan, $lt: priceLessThan }, isDeleted: false }).sort({ price: 1 })
-
-        if (product.length == 0) return res.status(404).send({ msg: "product not found" })
-        return res.status(201).send({ msg: "All products", data: product })
-
-    }
-
-
-
+    getproduct["title"] = Name
 }
-const getProductById = async function (req, res) {
-    try {
+if ( priceGreaterThan) {
+    if (!isValid( priceGreaterThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceGreaterThan} is not valid` })
+    }
+    getproduct["price"] = {$gt: priceGreaterThan}
+}
+if ( priceLessThan) {
+    if (!isValid( priceLessThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceLessThan} is not valid` })
+    }
+    getproduct["price"] = {$lt: priceLessThan}
+}
+if (size) {
+    if (!isValid(size)) {
+        return res.status(400).send({ status: false, message: `User id ${size} is not valid` })
+    }
+    getproduct["availableSizes"] ={$all:size}
+}
+if ( priceGreaterThan&& priceLessThan) {
+    if (!isValid( priceGreaterThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceGreaterThan} is not valid` })
+    }
+    if (!isValid( priceLessThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceLessThan} is not valid` })
+    }
+    getproduct["price"] = {$gt: priceGreaterThan,$lt: priceLessThan}
+}
+const findbyfilter=await productModel.find(getproduct)
+if(findbyfilter.length==0)return res.status(404).send({msg:"product not found"})
+return res.status(201).send({msg:"All products",data:findbyfilter})
 
+    }
+
+const getProductById = async function(req, res){
+    try{
+    
         const productId = req.params.productId;
-        if (!(isValidObjectId(productId))) return res.status(400).send({ status: false, message: "Please provide valid productId" })
-
-        const productDetails = await productModel.findOne({ _id: productId, isDeleted: false })
-
-        if (!productDetails) return res.status(404).send({ status: false, message: "No such product exists" })
-
-        return res.status(200).send({ status: true, message: 'Success', data: productDetails })
-
-    } catch (error) {
-        return res.status(500).send({ status: false, Error: error.message })
+        if(!isValidObjectId(productId)) return res.status(400).send({status: false, message: "Please provide valid productId"})
+    
+        const productDetails = await productModel.findOne({_id:productId, isDeleted:false})
+    
+        if(!productDetails) return res.status(404).send({status:false, message:"No such product exists"})
+    
+        return res.status(200).send({status: true, message: 'Success', data:productDetails})
+    
+    }catch(error){
+        return res.status(500).send({status:false, Error:error.message})
     }
 }
 
@@ -267,5 +277,5 @@ const updateProduct = async function (req, res) {
     } catch (err) {
         res.status(500).send({ status: false, error: err.message })
     }
-}
-module.exports = { createProduct, getproducts, getProductById, updateProduct }
+module.exports = { createProduct,getproducts, getProductById }
+

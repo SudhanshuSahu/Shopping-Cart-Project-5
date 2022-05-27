@@ -198,7 +198,7 @@ const updateUser = async (req, res) => {
      
   
       let userProfile = await userModel.findById(userId);
-      if(!userProfile){return res.status(404).send("user not found!")}
+      if(!userProfile){return res.status(404).send({status:false, message:"user not found!"})}
 
   
       
