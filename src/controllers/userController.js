@@ -76,9 +76,15 @@ const createUser = async function (req, res) {
 
         if (!requestBody.address.shipping.city) return res.status(400).send({ status: false, message: "City is required of shipping address" });
 
-
         if (!requestBody.address.shipping.pincode) return res.status(400).send({ status: false, message: "Pincode is required of shipping address" });
+        if (!isValid(requestBody.address.shipping)) return res.status(400).send({ status: false, message: "shipping address should be required" })
 
+        if (!isValid(requestBody.address.shipping.street)) return res.status(400).send({ status: false, message: "Street is required of shipping address" })
+
+        if (!isValid(requestBody.address.shipping.city)) return res.status(400).send({ status: false, message: "City is required of shipping address" })
+
+        if (!isValid(requestBody.address.shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode is required of shippingg address" })
+        if (!isValidPinCode(requestBody.address.billing.pincode)) return res.status(400).send({ status: false, message: "Pincode should be in numbers" })
 
         if (!isValid(requestBody.address.billing)) return res.status(400).send({ status: false, message: "Billing address should be required" })
 
@@ -87,7 +93,7 @@ const createUser = async function (req, res) {
         if (!isValid(requestBody.address.billing.city)) return res.status(400).send({ status: false, message: "City is required of billing address" })
 
         if (!isValid(requestBody.address.billing.pincode)) return res.status(400).send({ status: false, message: "Pincode is required of billing address" })
-
+        if (!isValidPinCode(requestBody.address.billing.pincode)) return res.status(400).send({ status: false, message: "Pincode should be in numbers" })
 
 
         let files = req.files
