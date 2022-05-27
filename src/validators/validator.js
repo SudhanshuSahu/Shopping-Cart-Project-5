@@ -58,11 +58,11 @@ let isValidPinCode = function(pincode){
 }
 //************************//
 
-//==Enum Validation
-let isValidEnum= function(value){
-    let size=["S", "XS", "M", "X", "L", "XXL", "XL"];
-  return  size.indexOf(value) !== -1;
-}
+//Enum Validation
+// let isValidEnum= function(value){
+//     let size=["S", "XS", "M", "X", "L", "XXL", "XL"];
+//   return  size.includes(value) !== -1;
+// }
 
 //Numeric Validation
 const isValidNum = function(value) {
@@ -72,4 +72,4 @@ const isValidNum = function(value) {
     return true
 }
 
-module.exports={isValid,isValidEmail,isValidMobile,isValidName,isValidObjectId,isValidPassword,isValidRequestBody,isValidPinCode,isValidNum,isValidEnum}
+module.exports={isValid,isValidEmail,isValidMobile,isValidName,isValidObjectId,isValidPassword,isValidRequestBody,isValidPinCode,isValidNum,}
