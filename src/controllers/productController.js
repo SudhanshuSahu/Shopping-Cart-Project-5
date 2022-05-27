@@ -54,10 +54,18 @@ const createProduct = async function (req, res) {
             return res.status(400).send({ status: true, msg: "Installments Should be in number" })
         }
 
+        const sizes =  ["S", "XS","M","X", "L","XXL", "XL"]
+        if(!availableSizes) return res.status(400).send({status: false, message: "Please enter atleast one size."})
+        let Sizeavilable= availableSizes.split(`,`)
+        for(let i=0;i<Sizeavilable.length;i++){
+            if(!(sizes.includes(Sizeavilable[i]))){
+                return res.status(400).send({status: false, message:"Sizes should be among [S, XS, M, X, L, XXL, XL]"})
+            }
 
-   if (!isValidEnum(availableSizes)) {
-        return res.status(400).send({ status: false, message: `please provide available size from  ${["S", "XS", "M", "X", "L", "XXL", "XL"]}` })
-   }
+}
+   
+       
+ 
 
 
     // Checking duplicate entry of title
@@ -89,50 +97,51 @@ let Name=filter.name
 let size=filter.size
 let priceGreaterThan=filter.priceGreaterThan
 let priceLessThan=filter.priceLessThan
-if(Name){
-    if(!isValid(Name))return res.status(400).send({msg:"please give valid input"})
-    const  product= await productModel.find({title:Name,isDeleted:false})
-    if(product.length==0)return res.status(404).send({msg:"product not found"})
-    return res.status(201).send({msg:"All products",data:product})
+const getproduct = { isDeleted: false };
+if (Name) {
+    if (!isValid(Name)) {
+        return res.status(400).send({ status: false, message: `User id ${Name} is not valid` })
+    }
+    getproduct["title"] = Name
+}
+if ( priceGreaterThan) {
+    if (!isValid( priceGreaterThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceGreaterThan} is not valid` })
+    }
+    getproduct["price"] = {$gt: priceGreaterThan}
+}
+if ( priceLessThan) {
+    if (!isValid( priceLessThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceLessThan} is not valid` })
+    }
+    getproduct["price"] = {$lt: priceLessThan}
+}
+if (size) {
+    if (!isValid(size)) {
+        return res.status(400).send({ status: false, message: `User id ${size} is not valid` })
+    }
+    getproduct["availableSizes"] ={$all:size}
+}
+if ( priceGreaterThan&& priceLessThan) {
+    if (!isValid( priceGreaterThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceGreaterThan} is not valid` })
+    }
+    if (!isValid( priceLessThan)) {
+        return res.status(400).send({ status: false, message: `User id ${ priceLessThan} is not valid` })
+    }
+    getproduct["price"] = {$gt: priceGreaterThan,$lt: priceLessThan}
+}
+const findbyfilter=await productModel.find(getproduct)
+if(findbyfilter.length==0)return res.status(404).send({msg:"product not found"})
+return res.status(201).send({msg:"All products",data:findbyfilter})
 
 }
-if(size){
-    if(!isValid(size))return res.status(400).send({msg:"please give valid input"})
-    const  product= await productModel.find({availableSizes:size,isDeleted:false})
-    if(product.length==0)return res.status(404).send({msg:"product not found"})
-    return res.status(201).send({msg:"All products",data:product})
 
-}if(priceLessThan){
-    if(!isValid(priceLessThan))return res.status(400).send({msg:"please give valid input"})
-    const  product= await productModel.find({price:{$lt: priceLessThan},isDeleted:false}).sort({price:-1})
-    if(product.length==0)return res.status(404).send({msg:"product not found"})
-    return res.status(201).send({msg:"All products",data:product})
-
-}if(priceGreaterThan){
-    if(!isValid(priceGreaterThan))return res.status(400).send({msg:"please give valid input"})
-    const  product= await productModel.find({price:{$gt: priceGreaterThan},isDeleted:false}).sort({price:1})
-    if(product.length==0)return res.status(404).send({msg:"product not found"})
-    return res.status(201).send({msg:"All products",data:product})
-
-}if(priceGreaterThan && priceLessThan){
-    if(!isValid(priceGreaterThan))return res.status(400).send({msg:"please give valid input"})
-    if(!isValid(priceLessThan))return res.status(400).send({msg:"please give valid input"})
-
-    const  product= await productModel.find({price:{$gt: priceGreaterThan,$lt:priceLessThan},isDeleted:false}).sort({price:1})
-
-    if(product.length==0)return res.status(404).send({msg:"product not found"})
-    return res.status(201).send({msg:"All products",data:product})
-
-}
-
-
-
-}
 const getProductById = async function(req, res){
     try{
     
         const productId = req.params.productId;
-        if(!(isValidObjectId(productId))) return res.status(400).send({status: false, message: "Please provide valid productId"})
+        if(!isValidObjectId(productId)) return res.status(400).send({status: false, message: "Please provide valid productId"})
     
         const productDetails = await productModel.findOne({_id:productId, isDeleted:false})
     
@@ -145,3 +154,4 @@ const getProductById = async function(req, res){
     }
     }
 module.exports = { createProduct,getproducts, getProductById }
+
