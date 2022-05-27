@@ -3,7 +3,6 @@ const { uploadFile } = require("../AWS/aws")
 const { isValid,
     isValidRequestBody,
     isValidObjectId,
-    isValidEnum,
     isValidNum } = require("../validators/validator")
 
 //create product Function
@@ -29,9 +28,9 @@ const createProduct = async function (req, res) {
     if (!isValid(price)) {
         return res.status(400).send({ status: true, msg: "price is mandatory" })
     }
-   if (!isValidNum(price)) {
-       return res.status(400).send({ status: true, msg: "price Should be numeric" })
-   }
+    if (!isValidNum(price)) {
+        return res.status(400).send({ status: true, msg: "price Should be numeric" })
+    }
 
     if (!isValid(currencyId)) {
         return res.status(400).send({ status: true, msg: "CurrencyId is mandatory" })
@@ -45,47 +44,49 @@ const createProduct = async function (req, res) {
     //     res.status(400).send({ status: false, msg: "currencyFormat should be in ₹" })
     //     return
     // }
-    
+
     // if(!isValid(currencyFormat)){
-        //     return res.status(400).send({status:true,msg:"currencyFormat is mandatory"})
-        // }
-        
-        if (!isValidNum(installments)) {
-            return res.status(400).send({ status: true, msg: "Installments Should be in number" })
+    //     return res.status(400).send({status:true,msg:"currencyFormat is mandatory"})
+    // }
+
+    if (!isValidNum(installments)) {
+        return res.status(400).send({ status: true, msg: "Installments Should be in number" })
+    }
+
+
+
+    if (availableSizes) {
+        let availableSize = availableSizes.toUpperCase().split(",")
+        console.log(availableSize);  // Creating an array
+
+      //  Enum validation on availableSizes
+      for (let i = 0; i < availableSize.length; i++) {
+        if (!(["S", "XS", "M", "X", "L", "XXL", "XL"]).includes(availableSize[i])) {
+            return res.status(400).send({ status: false, message: `Sizes should be ${["S", "XS", "M", "X", "L", "XXL", "XL"]}`})
         }
+    }
+    }
 
-        const sizes =  ["S", "XS","M","X", "L","XXL", "XL"]
-        if(!availableSizes) return res.status(400).send({status: false, message: "Please enter atleast one size."})
-        let Sizeavilable= availableSizes.split(`,`)
-        for(let i=0;i<Sizeavilable.length;i++){
-            if(!(sizes.includes(Sizeavilable[i]))){
-                return res.status(400).send({status: false, message:"Sizes should be among [S, XS, M, X, L, XXL, XL]"})
-            }
 
+
+// Checking duplicate entry of title
+let duplicateTitle = await productModel.find({ title: title })
+if (duplicateTitle.length != 0) {
+    return res.status(400).send({ status: false, msg: "Title already exist" })
 }
-   
-       
- 
 
+let files = req.files;
+if (files && files.length > 0) {
+    let uploadedFileURL = await uploadFile(files[0]);
+    let productImage = uploadedFileURL
 
-    // Checking duplicate entry of title
-    let duplicateTitle = await productModel.find({ title: title })
-    if (duplicateTitle.length != 0) {
-        return res.status(400).send({ status: false, msg: "Title already exist" })
+    const product = {
+        title, description, price, currencyId, currencyFormat: "₹", isFreeShipping, productImage, style, availableSizes:availableSize, installments
     }
-
-    let files = req.files;
-    if (files && files.length > 0) {
-        let uploadedFileURL = await uploadFile(files[0]);
-        let productImage = uploadedFileURL
-
-        const product = {
-            title, description, price, currencyId, currencyFormat:"₹", isFreeShipping, productImage, style, availableSizes, installments
-        }
-        console.log(product);
-        let productData = await productModel.create(product)
-        return res.status(201).send({ status: true, msg: "Product created", data: productData })
-    }
+    console.log(product);
+    let productData = await productModel.create(product)
+    return res.status(201).send({ status: true, msg: "Product created", data: productData })
+}
 
 }
 
@@ -135,7 +136,7 @@ const findbyfilter=await productModel.find(getproduct)
 if(findbyfilter.length==0)return res.status(404).send({msg:"product not found"})
 return res.status(201).send({msg:"All products",data:findbyfilter})
 
-}
+    }
 
 const getProductById = async function(req, res){
     try{
