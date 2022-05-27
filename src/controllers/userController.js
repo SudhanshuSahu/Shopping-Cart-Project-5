@@ -327,7 +327,7 @@ const updateUser = async (req, res) => {
             let uploadedFileURL = await uploadFile(files[0]);
             requestBody.profileImage = uploadedFileURL
         }else{
-            return res.status(400).send({ msg: "No file Found" })
+            return res.status(400).send({ status : false, message: "No file Found" })
 
         }
 
@@ -347,7 +347,7 @@ const updateUser = async (req, res) => {
   }
      
      
-       
+     
     
 
 

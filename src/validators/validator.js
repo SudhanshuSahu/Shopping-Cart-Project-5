@@ -72,4 +72,5 @@ const isValidNum = function(value) {
     return true
 }
 
+
 module.exports={isValid,isValidEmail,isValidMobile,isValidName,isValidObjectId,isValidPassword,isValidRequestBody,isValidPinCode,isValidNum,isValidEnum}
