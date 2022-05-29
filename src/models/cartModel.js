@@ -13,13 +13,14 @@ const cartSchema = new mongoose.Schema({
         productId: {
             type: ObjectId,
             ref: ('Product'),
-            required: true
+            required: true,
         },
         quantity: {
             type: Number,
             required: true,
             min: 1
-        }
+        },
+        _id:false
     }],
     totalPrice: {
         type: Number,

@@ -5,90 +5,101 @@ const { uploadFile } = require("../AWS/aws")
 const { isValid,
     isValidRequestBody,
     isValidObjectId,
-    isValidNum } = require("../validators/validator")
+    isValidNum,
+    validQuantity } = require("../validators/validator")
 
 const createCart = async function (req, res) {
+
     try {
-        let userId = req.params.userId
+        const userId = req.params.userId;
+        const requestBody = req.body;
+        const { quantity, productId } = requestBody;
 
-        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Please Provide valid userId" })
-
-        const userExist = await userModel.findOne({ _id: userId })
-        console.log(userExist)
-
-        if (!userExist) return res.status(404).send({ status: false, message: "No such User Exists" })
-
-        let createData = req.body
-
-        const checkCardId = await cartModel.findOne({ userId })
-        if (checkCardId) {
-            if (!createData.cartId)
-                return res.status(400).send({ status: false, message: "your cart is already created please enter your carid" })
-            if (!isValid(createData.cartId)) {
-                return res.status(400).send({ status: false, message: "enter cardid" })
-            }
-            if (!isValidObjectId(createData.cartId)) {
-                return res.status(400).send({ status: false, message: "Please Provide valid cartId" })
-            }
-
+        if (!isValidRequestBody(requestBody)) {
+            return res.status(400).send({ status: false, message: "Please provide valid request body" });
         }
 
+        if (!isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: "Please provide valid User Id" });
+        }
 
-        const { items, productId, quantity } = createData
-        if (!items) {
-            return res.status(400).send({ status: false, message: "items required" })
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: "Please provide valid Product Id" });
         }
-        if (!isValid(items)) {
-            return res.status(400).send({ status: false, message: ` ${items} is not valid` })
+
+        if (!isValid(quantity) || !validQuantity(quantity)) {
+            return res.status(400).send({ status: false, message: "Please provide valid quantity & it must be greater than zero." });
         }
-        if (items.length == 0) {
-            return res.status(400).send({ status: false, message: "not empty" })
+
+        const findUser = await userModel.findById({ _id: userId });
+
+        if (!findUser) {
+            return res.status(400).send({ status: false, message: `User doesn't exist by ${userId}` });
         }
-        if (!items[0].productId) {
-            return res.status(400).send({ status: false, message: "enter productid" })
-        }
-        if (!isValidObjectId(items[0].productId)) {
-            return res.status(400).send({ status: false, message: "Please Provide valid productId" })
-        }
-        console.log(items[0].productId)
-        const findProduct = await productModel.findOne({ _id: items[0].productId, isDeleted: false })
-        console.log(findProduct)
+
+        const findProduct = await productModel.findOne({ _id: productId, isDeleted: false });
 
         if (!findProduct) {
-            return res.status(400).send({ status: true, message: `No product is available for ${productId}` })
+            return res.status(400).send({ status: false, message: `Product doesn't exist by ${productId}` });
         }
 
-        if (!items[0].quantity) {
-            return res.status(400).send({ status: false, message: "quantity required" })
-        }
-        if (!isValid(items[0].quantity)) {
-            return res.status(400).send({ status: false, message: "not a valid quantity" })
-        }
-        if (!typeof items[0].quantity === Number && items[0].quantity <= 0) {
-            return res.status(400).send({ status: false, message: "quantity should be in numbers" })
-        }
-        console.log(findProduct.price)
-        if (!checkCardId) {
+        const findCartOfUser = await cartModel.findOne({ userId: userId });
 
+        if (!findCartOfUser) {
             var cartData = {
                 userId: userId,
-                items: [{
-                    productId: items[0].productId,
-                    quantity: items[0].quantity
-                }],
-                totalPrice: (findProduct.price) * (items[0].quantity),
-                totalItems: 1
-            }
+                items: [
+                    {
+                        productId: productId,
+                        quantity: quantity,
+                    },
+                ],
+                totalPrice: findProduct.price * quantity,
+                totalItems: 1,
+            };
+            const createCart = await cartModel.create(cartData);
+            return res.status(201).send({ status: true, message: `Cart created successfully`, data: createCart });
         }
-        console.log(cartData)
-        const createNewCart = await cartModel.create(cartData)
 
-        return res.status(201).send({ status: true, message: "Cart created successfully", data: createNewCart })
+        if (findCartOfUser) {
 
-    } catch (err) {
-        res.status(500).send({ status: false, error: err.message })
+            let price = findCartOfUser.totalPrice + req.body.quantity * findProduct.price;
+
+            let arr = findCartOfUser.items;
+
+            for (i in arr) {
+                if (arr[i].productId.toString() === productId) {
+                    arr[i].quantity += quantity;
+
+                    let updatedCart = {
+                        items: arr,
+                        totalPrice: price,
+                        totalItems: arr.length,
+                    };
+
+                    let responseData = await cartModel.findOneAndUpdate(
+                        { _id: findCartOfUser._id },
+                        updatedCart,
+                        { new: true }
+                    );
+                    return res.status(200).send({ status: true, message: `Product added successfully`, data: responseData });
+                }
+            }
+            arr.push({ productId: productId, quantity: quantity });
+
+            let updatedCart = {
+                items: arr,
+                totalPrice: price,
+                totalItems: arr.length,
+            };
+
+            let responseData = await cartModel.findOneAndUpdate({ _id: findCartOfUser._id }, updatedCart, { new: true });
+            return res.status(200).send({ status: true, message: `Product added successfully`, data: responseData });
+        }
+
+    } catch (error) {
+        res.status(500).send({ status: false, data: error.message });
     }
-
-}
+};
 
 module.exports = { createCart }

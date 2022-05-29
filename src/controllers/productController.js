@@ -3,7 +3,9 @@ const { uploadFile } = require("../AWS/aws")
 const { isValid,
     isValidRequestBody,
     isValidObjectId,
-    isValidNum } = require("../validators/validator")
+    isValidNum,
+isValidScripts } = require("../validators/validator")
+const currencySymbol = require("currency-symbol-map")
 
 //create product Function
 
@@ -18,11 +20,11 @@ const createProduct = async function (req, res) {
     //Destructuring the object
     const { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
 
-    if (!isValid(title)) {
+    if (!isValid(title) && !isValidScripts(title)) {
         return res.status(400).send({ status: true, msg: "Title is mandatory" })
     }
 
-    if (!isValid(description)) {
+    if (!isValid(description) || !isValidScripts(description)) {
         return res.status(400).send({ status: true, msg: "description is mandatory" })
     }
     if (!isValid(price)) {
@@ -39,11 +41,6 @@ const createProduct = async function (req, res) {
         res.status(400).send({ status: false, msg: "currency should be in INR" })
         return
     }
-
-    // if (currencyFormat !== "₹") {
-    //     res.status(400).send({ status: false, msg: "currencyFormat should be in ₹" })
-    //     return
-    // }
 
     // if(!isValid(currencyFormat)){
     //     return res.status(400).send({status:true,msg:"currencyFormat is mandatory"})
@@ -81,7 +78,7 @@ const createProduct = async function (req, res) {
         let productImage = uploadedFileURL
 
         const product = {
-            title, description, price, currencyId, currencyFormat: "₹", isFreeShipping, productImage, style, availableSizes: availableSize, installments
+            title, description, price, currencyId, currencyFormat: currencySymbol(currencyId), isFreeShipping, productImage, style, availableSizes: availableSize, installments
         }
         console.log(product);
         let productData = await productModel.create(product)
@@ -196,7 +193,7 @@ const updateProduct = async function (req, res) {
 
 
         if (title) {
-            if (!isValid(title)) {
+            if (!isValid(title) || !isValidScripts(title)) {
                 return res.status(400).send({ status: true, msg: "Title is mandatory" })
             }
 
