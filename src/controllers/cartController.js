@@ -1,7 +1,6 @@
 const userModel = require("../models/userModel")
 const productModel = require("../models/productModel")
 const cartModel = require("../models/cartModel")
-const { uploadFile } = require("../AWS/aws")
 const { isValid,
     isValidRequestBody,
     isValidObjectId,
@@ -150,17 +149,6 @@ const updateCart=async function(req,res){
                
             }
 
-             
-
-            
-
-
-
-            
-
-
-        
-
     }catch(err){
         return res.status(500).send({status:false,msg:err.message})
         
@@ -170,4 +158,32 @@ const updateCart=async function(req,res){
     
 }
 
-module.exports = { createCart,updateCart }
+
+
+//function==> to Fetch cart details
+const getCart = async function(req,res){
+    let userId =req.params.userId
+
+    //check if userId is valid or not
+    if(!isValidObjectId(userId)){
+        return res.status(400).send({status:false , message:"User Id is not valid"})
+    }
+
+    //check if user is present with this userId
+    let checkUserId = await userModel.findOne({_id:userId})
+    if(!checkUserId){
+        return res.status(404).send({status:false , message:`User does not exist with this userId ${userId}`})
+    }
+ 
+    //check if cart is present or not
+    let checkCart = await cartModel.findOne({userId})
+    if(!checkCart){
+        return res.status(404).send({status:false , message:`Cart of user with user id = ${userId} does not Exist`})
+    }
+    
+    res.status(200).send({status:true , data:checkCart})
+}
+
+
+
+module.exports = { createCart,getCart ,updateCart}
