@@ -120,7 +120,7 @@ const getCart = async function(req,res){
     //check if cart is present or not
     let checkCart = await cartModel.findOne({userId})
     if(!checkCart){
-        return res.status(404).send({status:false , message:`Cart of user with user id = ${userId} does not Exist`})
+        return res.status(404).send({status:false , message:`Cart of user with user id :${userId} does not Exist`})
     }
     
     res.status(200).send({status:true , data:checkCart})

@@ -42,9 +42,6 @@ const createProduct = async function (req, res) {
         return
     }
 
-    // if(!isValid(currencyFormat)){
-    //     return res.status(400).send({status:true,msg:"currencyFormat is mandatory"})
-    // }
 
     if (!isValidNum(installments)) {
         return res.status(400).send({ status: true, msg: "Installments Should be in number" })
@@ -193,7 +190,7 @@ const updateProduct = async function (req, res) {
 
 
         if (title) {
-            if (!isValid(title) || !isValidScripts(title)) {
+            if (!isValid(title) || !isValidScripts(title) || !title==="") {
                 return res.status(400).send({ status: true, msg: "Title is mandatory" })
             }
 
@@ -203,7 +200,7 @@ const updateProduct = async function (req, res) {
                 return res.status(400).send({ status: false, message: "This title already exist, try some new" })
             }
         }
-
+       
         if (description) {
             if (!isValid(description)) {
                 return res.status(400).send({ status: true, msg: "description is mandatory" })

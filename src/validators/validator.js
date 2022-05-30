@@ -66,7 +66,7 @@ let isValidEnum= function(value){
 
 //Numeric Validation
 const isValidNum = function(value) {
-    if(!/^[0-9]+$/.test(value.trim())){
+    if(!/^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)/.test(value.trim())){
         return false
     }
     return true
@@ -82,4 +82,16 @@ const isValidScripts= function(title){
     return scriptRegex.test(title)
 }
 
-module.exports={isValid,isValidEmail,isValidMobile,isValidName,isValidObjectId,isValidPassword,isValidRequestBody,isValidPinCode,isValidEnum, isValidNum, validQuantity, isValidScripts}
+module.exports={isValid,
+    isValidEmail,
+    isValidMobile,
+    isValidName,
+    isValidObjectId,
+    isValidPassword,
+    isValidRequestBody,
+    isValidPinCode,
+    isValidEnum,
+    isValidNum,
+    validQuantity,
+    isValidScripts
+    }
