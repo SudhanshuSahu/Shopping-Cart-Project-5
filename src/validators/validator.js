@@ -66,7 +66,7 @@ let isValidEnum= function(value){
 
 //Numeric Validation
 const isValidNum = function(value) {
-    if(!/^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)/.test(value.trim())){
+    if(!/^\d{1,5}\.?\d{0,2}$/.test(value.trim())){
         return false
     }
     return true

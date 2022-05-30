@@ -59,11 +59,14 @@ const createUser = async function (req, res) {
         }
 
         //==validating password==//
-        if (!isValid(password)) return res.status(400).send({ status: false, msg: "Password is a mendatory field" })
+        if (!isValid(password)) 
+        return res.status(400).send({ status: false, msg: "Password is a mendatory field" })
 
-        if (!isValidPassword(password)) return res.status(400).send({ status: false, msg: `Password ${password}  must include atleast one special character[@$!%?&], one uppercase, one lowercase, one number and should be mimimum 8 to 15 characters long` })
+        if (!isValidPassword(password)) 
+        return res.status(400).send({ status: false, msg: `Password ${password}  must include atleast one special character[@$!%?&], one uppercase, one lowercase, one number and should be mimimum 8 to 15 characters long` })
 
-        if (!isValid(requestBody.address)) return res.status(400).send({ status: false, message: "Address should be in object and must contain shipping and billing addresses" });
+        if (!isValid(requestBody.address)) 
+        return res.status(400).send({ status: false, message: "Address should be in object and must contain shipping and billing addresses" });
 
 
         requestBody.address = JSON.parse(requestBody.address)
