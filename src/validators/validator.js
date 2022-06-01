@@ -82,6 +82,11 @@ const isValidScripts= function(title){
     return scriptRegex.test(title)
 }
 
+const validString = function (value) {
+    if (typeof value === 'string' && value.trim().length === 0) return false
+    return true;
+}
+
 module.exports={isValid,
     isValidEmail,
     isValidMobile,
@@ -93,5 +98,6 @@ module.exports={isValid,
     isValidEnum,
     isValidNum,
     validQuantity,
-    isValidScripts
+    isValidScripts,
+    validString
     }

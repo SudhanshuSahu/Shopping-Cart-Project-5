@@ -11,7 +11,7 @@ const { createCart, updateCart,getCart,deleteCart}= require("../controllers/cart
 router.post("/register",createUser)
 router.post("/login", loginUser)
 router.get("/user/:userId/profile",authentication, getUserProfile)
-router.put("/user/:userId/profile",updateUser )
+router.put("/user/:userId/profile",authentication, authorisation, updateUser )
 
 //Product APIs
 router.post("/products",createProduct)

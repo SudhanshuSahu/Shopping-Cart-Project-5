@@ -12,7 +12,7 @@ const createCart = async function (req, res) {
     try {
         const userId = req.params.userId;
         const requestBody = req.body;
-        const { quantity, productId } = requestBody;
+        let { quantity, productId } = requestBody;
 
         if (!isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: "Please provide valid request body" });
@@ -26,8 +26,13 @@ const createCart = async function (req, res) {
             return res.status(400).send({ status: false, message: "Please provide valid Product Id" });
         }
 
-        if (!isValid(quantity) || !validQuantity(quantity)) {
+        if(!quantity){
+            quantity=1;
+
+        }else {
+            if (!isValid(quantity) || !validQuantity(quantity)) {
             return res.status(400).send({ status: false, message: "Please provide valid quantity & it must be greater than zero." });
+        }
         }
 
         const findUser = await userModel.findById({ _id: userId });
@@ -43,8 +48,10 @@ const createCart = async function (req, res) {
         }
 
         const findCartOfUser = await cartModel.findOne({ userId: userId });
-
+    
         if (!findCartOfUser) {
+            console.log(price)
+            console.log("hii")
             var cartData = {
                 userId: userId,
                 items: [
@@ -56,13 +63,14 @@ const createCart = async function (req, res) {
                 totalPrice: findProduct.price * quantity,
                 totalItems: 1,
             };
+            console.log(totalPrice)
             const createCart = await cartModel.create(cartData);
             return res.status(201).send({ status: true, message: `Cart created successfully`, data: createCart });
         }
 
         if (findCartOfUser) {
 
-            let price = findCartOfUser.totalPrice + req.body.quantity * findProduct.price;
+            let price = findCartOfUser.totalPrice + quantity * findProduct.price;
 
             let arr = findCartOfUser.items;
 
