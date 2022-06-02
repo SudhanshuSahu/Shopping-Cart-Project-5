@@ -4,8 +4,11 @@ const { isValid,
     isValidRequestBody,
     isValidObjectId,
     isValidNum,
-    isValidScripts } = require("../validators/validator")
+    isValidScripts,
+    validString
+} = require("../validators/validator")
 const currencySymbol = require("currency-symbol-map")
+const { TimestreamWrite } = require("aws-sdk")
 
 //create product Function
 
@@ -20,12 +23,12 @@ const createProduct = async function (req, res) {
     //Destructuring the object
     const { title, description, price, currencyId, isFreeShipping, style, availableSizes, installments } = data
 
-    if (!isValid(title) && !isValidScripts(title)) {
-        return res.status(400).send({ status: true, msg: "Title is mandatory" })
+    if (!isValid(title) || !isValidScripts(title)) {
+        return res.status(400).send({ status: true, msg: "Title is mandatory and should be valid" })
     }
 
-    if (!isValid(description) && !isValidScripts(description)) {
-        return res.status(400).send({ status: true, msg: "description is mandatory" })
+    if (!validString(description) || !isValidScripts(description)) {
+        return res.status(400).send({ status: true, message: "description is mandatory and should be valid" })
     }
     if (!isValid(price)) {
         return res.status(400).send({ status: true, msg: "price is mandatory" })
@@ -72,15 +75,20 @@ const createProduct = async function (req, res) {
     let files = req.files;
     if (files && files.length > 0) {
         let uploadedFileURL = await uploadFile(files[0]);
-        let productImage = uploadedFileURL
+        var productImage = uploadedFileURL
 
-        const product = {
-            title, description, price, currencyId, currencyFormat: currencySymbol(currencyId), isFreeShipping, productImage, style, availableSizes: availableSize, installments
-        }
-        console.log(product);
-        let productData = await productModel.create(product)
-        return res.status(201).send({ status: true, msg: "Product created", data: productData })
     }
+    if (files == 0) {
+        return res.status(400).send({ status: false, message: "No file Found" })
+    }
+
+    const product = {
+        title, description, price, currencyId, currencyFormat: currencySymbol(currencyId), isFreeShipping, productImage, style, availableSizes: availableSize, installments
+    }
+    console.log(product);
+    let productData = await productModel.create(product)
+    return res.status(201).send({ status: true, msg: "Product created", data: productData })
+
 
 }
 
@@ -179,9 +187,9 @@ const updateProduct = async function (req, res) {
             let profileImgUrl = await uploadFile(files[0]);
             updateData.productImage = profileImgUrl;
         }
-        if (files == 0) {
-            return res.status(400).send({ status: false, message: "No file Found" })
-        }
+        // if (files == 0) {
+        //     return res.status(400).send({ status: false, message: "No file Found" })
+        // }
 
         const product = await productModel.findOne({ _id: productId, isDeleted: false })
 
@@ -191,38 +199,27 @@ const updateProduct = async function (req, res) {
 
         //Validation for empty Body
         if (!isValidRequestBody(updateData)) {
-            return res.status(400).send({ status: true, msg: "Data must be present" })
+            return res.status(400).send({ status: true, msg: "Details must be present" })
         }
         //Destructuring the object
-        const { title, description, price, currencyId, currencyFormat, isFreeShipping, availableSizes, style, installments, isDeleted } = updateData
+        const { title, description, price, currencyId, isFreeShipping, availableSizes, style, installments, isDeleted } = updateData
 
-
-        if (title) {
-            if (!isValid(title) || !isValidScripts(title) || !title === "") {
-                return res.status(400).send({ status: true, msg: "Title is mandatory" })
-            }
-
-            let uniqueTitle = await productModel.findOne({ title })
-
-            if (uniqueTitle) {
-                return res.status(400).send({ status: false, message: "This title already exist, try some new" })
-            }
+        if (!validString(title) || !isValidScripts(title)) {
+            return res.status(400).send({ status: false, message: 'title is Required and should be valid' })
         }
 
-        if (description) {
-            if (!isValid(description)) {
-                return res.status(400).send({ status: true, msg: "description is mandatory" })
-            }
+        if (!validString(description) || !isValidScripts(description)) {
+            return res.status(400).send({ status: true, msg: "description is mandatory" })
+        }
+
+        if (!validString(price)) {
+            return res.status(400).send({ status: false, message: 'price is Required' })
         }
 
         if (price) {
-            if (!isValid(price)) {
-                return res.status(400).send({ status: true, msg: "price is mandatory" })
-            }
+            if (!isValid(price) && !isValidScripts(price)) return res.status(400).send({ status: false, message: "price is required" })
+            if (!isValidNum(price)) return res.status(400).send({ status: false, message: "price should be number " })
 
-            if (!isValidNum(price)) {
-                return res.status(400).send({ status: true, msg: "price Should be numeric" })
-            }
         }
 
 
@@ -236,16 +233,6 @@ const updateProduct = async function (req, res) {
             }
 
         }
-
-
-        // if (currencyFormat !== "₹") {
-        //     res.status(400).send({ status: false, msg: "currencyFormat should be in ₹" })
-        //     return
-        // }
-
-        // if(!isValid(currencyFormat)){
-        //     return res.status(400).send({status:true,msg:"currencyFormat is mandatory"})
-        // }
 
         if (installments) {
             if (!isValidNum(installments)) {
@@ -266,6 +253,10 @@ const updateProduct = async function (req, res) {
             }
         }
 
+
+        if (!validString(style) || !isValidScripts(style)) {
+            return res.status(400).send({ status: true, message: "Please enter valid input"})
+        }
 
 
         let updatedProduct = await productModel.findOneAndUpdate(
@@ -294,7 +285,7 @@ const deleteProductbyId = async function (req, res) {
         }
 
         if (getProduct.isDeleted == true) {
-            return res.status(404).send({ status: false, message: `${getProduct.title} is already been deleted.` })
+            return res.status(404).send({ status: false, message: `Product with the title : ${getProduct.title} is already been deleted.` })
         }
 
         let products = await productModel.findOneAndUpdate({ _id: id }, { isDeleted: true, deletedAt: new Date().toLocaleString() }, { new: true });

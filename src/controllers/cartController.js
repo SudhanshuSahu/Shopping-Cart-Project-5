@@ -5,34 +5,38 @@ const { isValid,
     isValidRequestBody,
     isValidObjectId,
     isValidNum,
-    validQuantity } = require("../validators/validator")
+    validQuantity } = require("../validators/validator");
+const { find } = require("../models/userModel");
 
 const createCart = async function (req, res) {
 
     try {
         const userId = req.params.userId;
         const requestBody = req.body;
-        let { quantity, productId } = requestBody;
+        let { quantity, productId, cartId } = requestBody;
 
         if (!isValidRequestBody(requestBody)) {
             return res.status(400).send({ status: false, message: "Please provide valid request body" });
         }
 
+
         if (!isValidObjectId(userId)) {
             return res.status(400).send({ status: false, message: "Please provide valid User Id" });
         }
+
+
 
         if (!isValidObjectId(productId)) {
             return res.status(400).send({ status: false, message: "Please provide valid Product Id" });
         }
 
-        if(!quantity){
-            quantity=1;
+        if (!quantity) {
+            quantity = 1;
 
-        }else {
+        } else {
             if (!isValid(quantity) || !validQuantity(quantity)) {
-            return res.status(400).send({ status: false, message: "Please provide valid quantity & it must be greater than zero." });
-        }
+                return res.status(400).send({ status: false, message: "Please provide valid quantity & it must be greater than zero." });
+            }
         }
 
         const findUser = await userModel.findById({ _id: userId });
@@ -47,11 +51,22 @@ const createCart = async function (req, res) {
             return res.status(400).send({ status: false, message: `Product doesn't exist by ${productId}` });
         }
 
-        const findCartOfUser = await cartModel.findOne({ userId: userId });
-    
+        if (cartId) {
+            if (!isValidObjectId(cartId)) {
+                return res.status(400).send({ status: false, message: "Please provide valid cartId" });
+            }
+
+            var cartIsUnique = await cartModel.findOne({ _id: cartId, isDeleted: false })
+
+            if (!cartIsUnique) {
+                return res.status(400).send({ status: false, message: "cartId doesn't exits" })
+            }
+        }
+
+        const findCartOfUser = await cartModel.findOne({ userId: userId, isDeleted: false });
+
         if (!findCartOfUser) {
-            console.log(price)
-            console.log("hii")
+
             var cartData = {
                 userId: userId,
                 items: [
@@ -63,7 +78,7 @@ const createCart = async function (req, res) {
                 totalPrice: findProduct.price * quantity,
                 totalItems: 1,
             };
-            console.log(totalPrice)
+
             const createCart = await cartModel.create(cartData);
             return res.status(201).send({ status: true, message: `Cart created successfully`, data: createCart });
         }
@@ -111,6 +126,7 @@ const createCart = async function (req, res) {
     }
 };
 
+
 const updateCart = async function (req, res) {
     try {
         let userId = req.params.userId
@@ -129,10 +145,7 @@ const updateCart = async function (req, res) {
             return res.status(400).send({ status: false, msg: "plz input your productid" })
 
         }
-        if(!removeProduct){
-            return res.status(400).send({status:false,msg:"plz input your removeproduct"})
-
-        }
+       
         if (!isValidObjectId(cartId)) {
 
             return res.status(400).send({ status: false, msg: "cartid not match" })
@@ -148,14 +161,18 @@ const updateCart = async function (req, res) {
         const findProduct = await productModel.findOne({ _id: productId, isDeleted: false })
 
         let arr = findCart.items
+        if(arr.length==0)return res.status(404).send({status:false,message:"product in cart not found",data:findCart})
         for (i = 0; i <= arr.length; i++) {
+            
+           
             if (arr[i].productId == productId) {
                 let productPriceTotal = arr[i].quantity * findProduct.price
+                productPriceTotal=productPriceTotal.toFixed(2)
                 if (removeProduct === 0) {
                     const updateProductItem = await cartModel.findOneAndUpdate({ _id: cartId },
                         {
                             $pull: { items: { productId: productId } },
-                            totalPrice: findCart.totalPrice - productPriceTotal,
+                            totalPrice: (findCart.totalPrice - productPriceTotal).toFixed(2),
                             totalItems: findCart.totalItems - 1
                         },
                         { new: true })
@@ -166,7 +183,7 @@ const updateCart = async function (req, res) {
                         let emptyCart = await cartModel.findOneAndUpdate({ _id: cartId },
                             {
                                 $pull: { items: { productId: productId } },
-                                totalPrice: findCart.totalPrice - productPriceTotal,
+                                totalPrice: (findCart.totalPrice - productPriceTotal).toFixed(2),
                                 totalItems: findCart.totalItems - 1
                             },
                             { new: true })
@@ -174,11 +191,12 @@ const updateCart = async function (req, res) {
                     }
                     arr[i].quantity = arr[i].quantity - 1
                     let updateCart = await cartModel.findByIdAndUpdate({ _id: cartId },
-                        { items: arr, totalPrice: findCart.totalPrice - findProduct.price },
+                        { items: arr, totalPrice: (findCart.totalPrice - findProduct.price).toFixed(2) },
                         { new: true });
                     return res.status(200).send({ status: true, msg: "Product is decreased successfully", data: updateCart })
                 }
-            }
+            }else return res.status(400).send({status:false,message:"product not present in cart"})
+           
 
         }
 
@@ -190,8 +208,6 @@ const updateCart = async function (req, res) {
 
 
 }
-
-
 
 //function==> to Fetch cart details
 const getCart = async function (req, res) {

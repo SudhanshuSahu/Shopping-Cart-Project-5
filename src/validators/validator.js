@@ -78,7 +78,7 @@ const validQuantity = function isInteger(value) {
 }
 
 const isValidScripts= function(title){
-    const scriptRegex = /^[a-zA-Z , ]{2,30}$/
+    const scriptRegex = /^(?![0-9]*$)[A-Za-z0-9\s\-_,\.;:()]+$/
     return scriptRegex.test(title)
 }
 
