@@ -4,7 +4,7 @@ const router = express.Router()
 const {createUser, loginUser, getUserProfile,updateUser} = require("../controllers/userController")
 const {authentication,authorisation } = require("../middleware/auth") 
 const { createCart, updateCart,getCart,deleteCart}= require("../controllers/cartController")
-const {createOrder }= require("../controllers/orderController")
+const {createOrder ,updateOrder}= require("../controllers/orderController")
 
 
 
@@ -28,8 +28,8 @@ router.get("/users/:userId/cart",authentication, getCart)
 router.delete("/users/:userId/cart",authentication, authorisation, deleteCart)
 
 //Order APIs
-router.post('/users/:userId/orders', createOrder);
-
+router.post('/users/:userId/orders',authentication,authorisation, createOrder);
+router.put('/users/:userId/orders',authentication,authorisation, updateOrder);
 // if api is invalid OR wrong URL
 router.all("/*", function (req, res) {
     res
@@ -37,9 +37,4 @@ router.all("/*", function (req, res) {
       .send({ status: false, message: "The api you requested is not available" });
   });
   
-
-
-
-
-
 module.exports =router
