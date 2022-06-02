@@ -250,7 +250,7 @@ const deleteCart = async (req, res) => {
             { new: true }
         )
 
-        res.status(200).send({ status: true, message: "Products removed successfully" })
+        res.status(204).send({ status: true, message: "Products removed successfully" })
     } catch (err) {
         res.status(500).send({ status: false, error: err.message })
     }

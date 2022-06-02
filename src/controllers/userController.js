@@ -18,9 +18,9 @@ const { isValid,
 
 const createUser = async function (req, res) {
     try {
-        //==validating request body==//
+        //validating request body//
         let requestBody = req.body
-        // requestBody = JSON.parse(requestBody.address)
+        
         if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, message: "Invalid request, please provide details" })
 
         let { fname, lname, email, phone, password, address, profileImage } = requestBody
@@ -57,15 +57,15 @@ const createUser = async function (req, res) {
         }
         let uniquePhone = await userModel.findOne({ phone: phone })
         if (uniquePhone) {
-            return res.status(409).send({ status: false, msg: "Phone number already exist" })
+            return res.status(409).send({ status: false, message: "Phone number already exist" })
         }
 
         //==validating password==//
         if (!isValid(password))
-            return res.status(400).send({ status: false, msg: "Password is a mendatory field" })
+            return res.status(400).send({ status: false, message: "Password is a mendatory field" })
 
         if (!isValidPassword(password))
-            return res.status(400).send({ status: false, msg: `Password  must include atleast one special character[@$!%?&], one uppercase, one lowercase, one number and should be mimimum 8 to 15 characters long` })
+            return res.status(400).send({ status: false, message: `Password  must include atleast one special character[@$!%?&], one uppercase, one lowercase, one number and should be mimimum 8 to 15 characters long` })
 
         if (!isValid(requestBody.address))
             return res.status(400).send({ status: false, message: "Address should be in object and must contain shipping and billing addresses" });
@@ -138,7 +138,7 @@ const createUser = async function (req, res) {
             return res.status(201).send({ status: true, message: "user created successfully", data: createUserData })
         }
         else {
-            return res.status(400).send({ msg: "No file Found" })
+            return res.status(400).send({ message: "No file Found" })
 
         }
     } catch (err) {
@@ -164,9 +164,9 @@ const loginUser = async function (req, res) {
         }
 
         //==validating password==//
-        if (!isValid(password)) return res.status(400).send({ status: false, msg: "Password is a mendatory field" })
+        if (!isValid(password)) return res.status(400).send({ status: false, message: "Password is a mendatory field" })
 
-        if (!isValidPassword(password)) return res.status(400).send({ status: false, msg: `Password ${password}  must include atleast one special character[@$!%?&], one uppercase, one lowercase, one number and should be mimimum 8 to 15 characters long` })
+        if (!isValidPassword(password)) return res.status(400).send({ status: false, message: `Password ${password}  must include atleast one special character[@$!%?&], one uppercase, one lowercase, one number and should be mimimum 8 to 15 characters long` })
 
         const checkData = await userModel.findOne({ email })
 
@@ -232,12 +232,8 @@ const updateUser = async (req, res) => {
         let { fname, lname, email, phone, password, address } = data
 
        let userProfile = await userModel.findById(userId);
-      if(!userProfile){return res.status(404).send({status:false, message:"user not found!"})}
-
-
-        // if (files == 0) {
-        //     return res.status(400).send({ status: false, message: "No file Found" })
-        // }
+       
+       if(!userProfile){return res.status(404).send({status:false, message:"user not found!"})}
 
         if (files && files.length > 0) {
 
@@ -320,7 +316,6 @@ const updateUser = async (req, res) => {
 
             if (!isValid(data.address)) return res.status(400).send({ status: false, message: "Address should be in object and must contain shipping and billing addresses" });
 
-            //JSON.parse(JSON.stringify(userProfile.address))
             address = JSON.parse(address)
 
             let tempAddress = userProfile.address
@@ -385,8 +380,7 @@ const updateUser = async (req, res) => {
             data.address = tempAddress;
         }
 
-
-
+        
         let updateUser = await userModel.findOneAndUpdate(
             { _id: userId },
             data,

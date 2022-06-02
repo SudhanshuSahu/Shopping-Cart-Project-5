@@ -37,9 +37,4 @@ router.all("/*", function (req, res) {
       .send({ status: false, message: "The api you requested is not available" });
   });
   
-
-
-
-
-
 module.exports =router
