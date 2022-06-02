@@ -248,11 +248,15 @@ const updateUser = async (req, res) => {
 
         if (!isValidRequestBody(data)) return res.status(400).send({ status: false, message: "please provide details" })
 
-
+        
         if (!validString(fname)) {
             return res.status(400).send({ status: false, message: 'fname is Required' })
         }
+
+
+       
         if (fname) {
+            
             if (!isValid(fname)) {
                 return res.status(400).send({ status: false, message: "Invalid request parameter, please provide fname" })
             }
