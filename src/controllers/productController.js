@@ -8,10 +8,10 @@ const { isValid,
     validString
 } = require("../validators/validator")
 const currencySymbol = require("currency-symbol-map")
-const { TimestreamWrite } = require("aws-sdk")
+
+
 
 //create product Function
-
 const createProduct = async function (req, res) {
     try {
         let data = req.body
@@ -186,12 +186,10 @@ const getproducts = async function (req, res) {
 
         if (priceSort) {
             if (!isValid(priceSort) && !isValidScripts(priceSort)) return res.status(400).send({ status: false, message: "priceSort is required" })
-            if (!isValidNum(priceSort)) return res.status(400).send({ status: false, message: "priceSort should be number " })
+            //if (!isValidNum(priceSort)) return res.status(400).send({ status: false, message: "priceSort should be number " })
             priceSort = priceSort.toString().trim()
             if (!(priceSort == '-1' || priceSort == '1')) {
                 return res.status(400).send({ status: false, message: `value of priceSort must be 1 or -1 ` })
-            } else {
-                priceSort = 1
             }
 
         }
@@ -235,9 +233,10 @@ const updateProduct = async function (req, res) {
             let profileImgUrl = await uploadFile(files[0]);
             updateData.productImage = profileImgUrl;
         }
-        // if (files == 0) {
-        //     return res.status(400).send({ status: false, message: "No file Found" })
-        // }
+
+        if (!isValidObjectId(productId)) {
+            return res.status(400).send({ status: false, message: `productId is invalid.` });
+        }
 
         const product = await productModel.findOne({ _id: productId, isDeleted: false })
 
@@ -312,7 +311,7 @@ const updateProduct = async function (req, res) {
             updateData,
             { new: true }
         )
-        res.status(201).send({ status: true, message: "User profile updated", data: updatedProduct });
+        res.status(200).send({ status: true, message: "User profile updated", data: updatedProduct });
 
 
     } catch (err) {
