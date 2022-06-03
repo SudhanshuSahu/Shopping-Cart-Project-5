@@ -166,7 +166,7 @@ const updateCart = async function (req, res) {
             return res.status(400).send({ status: false, message: "please input your productid" })
 
         }
-       
+
         if (!isValidObjectId(cartId)) {
 
             return res.status(400).send({ status: false, message: "cartid not match" })
@@ -184,15 +184,13 @@ const updateCart = async function (req, res) {
 //------------Check Item Present In Cart-----------//
 
         let arr = findCart.items
-        if(arr.length==0)return res.status(404).send({status:false,message:"product in cart not found",data:findCart})
-
-//----------Product ID Present In Cart & Update-------------//
-
+        if (arr.length == 0) return res.status(404).send({ status: false, message: "product in cart not found", data: findCart })
         for (i = 0; i <= arr.length; i++) {
-            
-           if (arr[i].productId == productId) {
+
+
+            if (arr[i].productId == productId) {
                 let productPriceTotal = arr[i].quantity * findProduct.price
-                productPriceTotal=productPriceTotal.toFixed(2)
+                productPriceTotal = productPriceTotal.toFixed(2)
                 if (removeProduct === 0) {
                     const updateProductItem = await cartModel.findOneAndUpdate({ _id: cartId },
                         {
@@ -220,8 +218,8 @@ const updateCart = async function (req, res) {
                         { new: true });
                     return res.status(200).send({ status: true, msg: "Product is decreased successfully", data: updateCart })
                 }
-            }else return res.status(400).send({status:false,message:"product not present in cart"})
-           
+            } else return res.status(400).send({ status: false, message: "product not present in cart" })
+
 
         }
 

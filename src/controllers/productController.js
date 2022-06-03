@@ -8,9 +8,13 @@ const { isValid,
     validString
 } = require("../validators/validator")
 const currencySymbol = require("currency-symbol-map")
+<<<<<<< HEAD
+
+=======
+>>>>>>> 2d2083a752b66a7e85bca579653ea042695e437f
 
 
-//create product Function
+//**********************************create product Function********************************************
 
 const createProduct = async function (req, res) {
     try {
@@ -27,10 +31,13 @@ const createProduct = async function (req, res) {
         if (!isValid(title) || !isValidScripts(title)) {
             return res.status(400).send({ status: true, msg: "Title is mandatory and should be valid" })
         }
-
+        
+        //validation for Description 
         if (!validString(description) || !isValidScripts(description)) {
             return res.status(400).send({ status: true, message: "description is mandatory and should be valid" })
         }
+
+        // Validation for Price
         if (!isValid(price)) {
             return res.status(400).send({ status: true, msg: "price is mandatory" })
         }
@@ -38,6 +45,7 @@ const createProduct = async function (req, res) {
             return res.status(400).send({ status: true, msg: "price Should be numeric" })
         }
 
+         //Validation For currencyId 
         if (!isValid(currencyId)) {
             return res.status(400).send({ status: true, msg: "CurrencyId is mandatory" })
         }
@@ -46,13 +54,13 @@ const createProduct = async function (req, res) {
             return
         }
 
-
+        //Validation For Installments
         if (!isValidNum(installments)) {
             return res.status(400).send({ status: true, msg: "Installments Should be in number" })
         }
 
 
-
+    // Validation For availableSizes
         if (availableSizes) {
             var availableSize = availableSizes.toUpperCase().split(",")
             console.log(availableSize);  // Creating an array
@@ -87,6 +95,8 @@ const createProduct = async function (req, res) {
             title, description, price, currencyId, currencyFormat: currencySymbol(currencyId), isFreeShipping, productImage, style, availableSizes: availableSize, installments
         }
         console.log(product);
+
+        //create Document in Product Collection
         let productData = await productModel.create(product)
         return res.status(201).send({ status: true, message: "Product created", data: productData })
     } catch (err) {
@@ -95,7 +105,7 @@ const createProduct = async function (req, res) {
 
 }
 
-//Get function to fetch the products
+//******************* function to fetch the products by Query**************************************************
 
 const getproducts = async function (req, res) {
     try {
@@ -107,6 +117,7 @@ const getproducts = async function (req, res) {
         let priceSort = filter.priceSort
         const getproduct = { isDeleted: false };
 
+        //Vaidation For Name
         if (!validString(Name)) {
             return res.status(400).send({ status: false, message: 'Please enter name' })
         }
@@ -117,6 +128,8 @@ const getproducts = async function (req, res) {
             }
             getproduct["title"] = Name
         }
+
+        //Validation For Price
 
         if (!validString(priceGreaterThan)) {
             return res.status(400).send({ status: false, message: 'Please enter pricegreaterThan' })
@@ -146,6 +159,7 @@ const getproducts = async function (req, res) {
             getproduct["price"] = { $lt: priceLessThan }
         }
 
+        //Validation For Size
         if (!validString(size)) {
             return res.status(400).send({ status: false, message: 'Please enter size' })
         }
@@ -179,7 +193,8 @@ const getproducts = async function (req, res) {
             }
             getproduct["price"] = { $gt: priceGreaterThan, $lt: priceLessThan }
         }
-
+        
+        //Validation For priceSort
         if (!validString(priceSort)) {
             return res.status(400).send({ status: false, message: 'priceSort is Required' })
         }
@@ -187,17 +202,17 @@ const getproducts = async function (req, res) {
         if (priceSort) {
             
             if (!isValid(priceSort) && !isValidScripts(priceSort)) return res.status(400).send({ status: false, message: "priceSort is required" })
-            
+            //if (!isValidNum(priceSort)) return res.status(400).send({ status: false, message: "priceSort should be number " })
             priceSort = priceSort.toString().trim()
             if (!(priceSort == '-1' || priceSort == '1')) {
                 return res.status(400).send({ status: false, message: `value of priceSort must be 1 or -1 ` })
             } 
-
         }
 
 
         const findbyfilter = await productModel.find(getproduct).sort({ price: priceSort }).select({ _v: 0 })
-
+          
+        //If product Document not found
         if (findbyfilter.length == 0) return res.status(404).send({ msg: "product not found" })
         return res.status(200).send({ msg: "All products", data: findbyfilter })
     } catch (err) {
@@ -206,14 +221,17 @@ const getproducts = async function (req, res) {
 
 }
 
+//******************* function to fetch the products by Params**************************************************
 const getProductById = async function (req, res) {
     try {
 
+         //Validation for ProductId
         const productId = req.params.productId;
         if (!isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Please provide valid productId" })
 
         const productDetails = await productModel.findOne({ _id: productId, isDeleted: false })
-
+  
+        //Check if Product is Exist or not
         if (!productDetails) return res.status(404).send({ status: false, message: "No such product exists" })
 
         return res.status(200).send({ status: true, message: 'Success', data: productDetails })
@@ -223,6 +241,7 @@ const getProductById = async function (req, res) {
     }
 }
 
+//******************* function to Update the products **************************************************
 const updateProduct = async function (req, res) {
     try {
 
@@ -230,16 +249,17 @@ const updateProduct = async function (req, res) {
         let updateData = req.body
         let files = req.files
 
+        //uploading files to aws
         if (files && files.length > 0) {
             let profileImgUrl = await uploadFile(files[0]);
             updateData.productImage = profileImgUrl;
         }
-        // if (files == 0) {
-        //     return res.status(400).send({ status: false, message: "No file Found" })
-        // }
+      
 
         const product = await productModel.findOne({ _id: productId, isDeleted: false })
 
+
+        //if product not found
         if (!product) {
             return res.status(404).send({ status: false, message: `product not found` })
         }
@@ -251,14 +271,17 @@ const updateProduct = async function (req, res) {
         //Destructuring the object
         const { title, description, price, currencyId, isFreeShipping, availableSizes, style, installments, isDeleted } = updateData
 
+       // validation for title
         if (!validString(title) || !isValidScripts(title)) {
             return res.status(400).send({ status: false, message: 'title is Required and should be valid' })
         }
 
+        //validation for description
         if (!validString(description) || !isValidScripts(description)) {
             return res.status(400).send({ status: true, msg: "description is mandatory" })
         }
 
+        //validation for price
         if (!validString(price)) {
             return res.status(400).send({ status: false, message: 'price is Required' })
         }
@@ -270,6 +293,7 @@ const updateProduct = async function (req, res) {
         }
 
 
+        //validation for currency Id
         if (currencyId) {
             if (!isValid(currencyId)) {
                 return res.status(400).send({ status: true, msg: "CurrencyId is mandatory" })
@@ -281,12 +305,15 @@ const updateProduct = async function (req, res) {
 
         }
 
+        //Validation for installments
         if (installments) {
             if (!isValidNum(installments)) {
                 return res.status(400).send({ status: false, message: "Installments Should be in number" })
             }
         }
 
+
+        //Validation for available sizes
         if (availableSizes) {
             let availableSize = availableSizes.toUpperCase().split(",")
             console.log(availableSize);  // Creating an array
@@ -311,21 +338,26 @@ const updateProduct = async function (req, res) {
             updateData,
             { new: true }
         )
-        res.status(201).send({ status: true, message: "User profile updated", data: updatedProduct });
+        res.status(200).send({ status: true, message: "User profile updated", data: updatedProduct });
 
 
     } catch (err) {
         res.status(500).send({ status: false, error: err.message })
     }
 }
+
+//******************* function to Delete the products**************************************************
 const deleteProductbyId = async function (req, res) {
     try {
+
         let id = req.params.productId;
 
+        //check if product Id is valid or not
         if (!isValidObjectId(id)) {
             return res.status(400).send({ status: false, message: `productId is invalid.` });
         }
 
+      //Check if product found or not
         let getProduct = await productModel.findOne({ _id: id });
         if (!getProduct) {
             return res.status(404).send({ status: false, message: "No such Product found" });
