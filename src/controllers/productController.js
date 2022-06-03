@@ -8,7 +8,7 @@ const { isValid,
     validString
 } = require("../validators/validator")
 const currencySymbol = require("currency-symbol-map")
-const { TimestreamWrite } = require("aws-sdk")
+
 
 //create product Function
 
@@ -185,14 +185,13 @@ const getproducts = async function (req, res) {
         }
 
         if (priceSort) {
+            
             if (!isValid(priceSort) && !isValidScripts(priceSort)) return res.status(400).send({ status: false, message: "priceSort is required" })
-            if (!isValidNum(priceSort)) return res.status(400).send({ status: false, message: "priceSort should be number " })
+            
             priceSort = priceSort.toString().trim()
             if (!(priceSort == '-1' || priceSort == '1')) {
                 return res.status(400).send({ status: false, message: `value of priceSort must be 1 or -1 ` })
-            } else {
-                priceSort = 1
-            }
+            } 
 
         }
 

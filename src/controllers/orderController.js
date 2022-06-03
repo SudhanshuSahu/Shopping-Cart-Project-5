@@ -5,8 +5,8 @@ const orderModel = require("../models/orderModel")
 const { isValid,
     isValidRequestBody,
     isValidObjectId,
-    isValidNum,
-    validQuantity } = require("../validators/validator")
+    
+     } = require("../validators/validator")
 
     const createOrder = async (req, res) => {
       try {

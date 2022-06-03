@@ -6,7 +6,7 @@ const { isValid,
     isValidObjectId,
     isValidNum,
     validQuantity } = require("../validators/validator");
-const { find } = require("../models/userModel");
+
 
 //---------------Create Cart--------------//
 
@@ -201,7 +201,7 @@ const updateCart = async function (req, res) {
                             totalItems: findCart.totalItems - 1
                         },
                         { new: true })
-                    return res.status(200).send({ status: true, msg: 'sucessfully removed product', data: updateProductItem })
+                    return res.status(200).send({ status: true, message: 'sucessfully removed product', data: updateProductItem })
                 }
                 if (removeProduct == 1) {
                     if (arr[i].quantity == 1 && removeProduct == 1) {
@@ -212,7 +212,7 @@ const updateCart = async function (req, res) {
                                 totalItems: findCart.totalItems - 1
                             },
                             { new: true })
-                        return res.status(200).send({ status: true, msg: 'Product removed successfully', data: emptyCart })
+                        return res.status(200).send({ status: true, message: 'Product removed successfully', data: emptyCart })
                     }
                     arr[i].quantity = arr[i].quantity - 1
                     let updateCart = await cartModel.findByIdAndUpdate({ _id: cartId },
