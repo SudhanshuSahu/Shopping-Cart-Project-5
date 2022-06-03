@@ -23,7 +23,7 @@ const createUser = async function (req, res) {
         
         if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, message: "Invalid request, please provide details" })
 
-        let { fname, lname, email, phone, password, address, profileImage } = requestBody
+        let { fname, lname, email, phone, password} = requestBody
 
         if (!isValid(fname)) {
             return res.status(400).send({ status: false, message: "fname is required" })
