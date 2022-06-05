@@ -1,12 +1,10 @@
-const userModel = require("../models/userModel")
-const productModel = require("../models/productModel")
 const cartModel = require("../models/cartModel")
 const orderModel = require("../models/orderModel")
 const { isValid,
     isValidRequestBody,
     isValidObjectId,
-    isValidNum,
-    validQuantity } = require("../validators/validator")
+    
+     } = require("../validators/validator")
 
     const createOrder = async (req, res) => {
       try {
@@ -29,16 +27,11 @@ const { isValid,
     
       //  checking cancellable value is present
         if(data.cancellable || typeof data.cancellable == 'string') {
-          if(!data.cancellable) return res.status(400).send({ status: false, message: "Enter a value for is cancellable" })
+          if(!data.cancellable) return res.status(400).send({ status: false, message: "Enter a value for its cancellable" })
    
           if(typeof data.cancellable == 'string'){
          //converting it to lowercase and removing white spaces
-            data.cancellable = data.cancellable.toLowerCase().trim();;
-            if(data.cancellable == 'true' || data.cancellable == 'false') {
-            
-              data.cancellable = JSON.parse(data.cancellable);  
-
-             }
+            data.cancellable = data.cancellable.toLowerCase().trim();
           }
           if(typeof data.cancellable !== 'boolean') return res.status(400).send({ status: false, message: "Cancellable should be in boolean value" })
         }

@@ -77,7 +77,7 @@ const createProduct = async function (req, res) {
             return res.status(400).send({ status: false, msg: "Title already exist" })
         }
 
-        let files = req.files;
+        let files = req.files; 
         if (files && files.length > 0) {
             let uploadedFileURL = await uploadFile(files[0]);
             var productImage = uploadedFileURL
@@ -111,7 +111,7 @@ const getproducts = async function (req, res) {
         let priceGreaterThan = filter.priceGreaterThan
         let priceLessThan = filter.priceLessThan
         let priceSort = filter.priceSort
-        const getproduct = { isDeleted: false };
+        let getproduct = { isDeleted: false };
 
         //Vaidation For Name
         if (!validString(Name)) {
@@ -196,8 +196,9 @@ const getproducts = async function (req, res) {
         }
 
         if (priceSort) {
+            
             if (!isValid(priceSort) && !isValidScripts(priceSort)) return res.status(400).send({ status: false, message: "priceSort is required" })
-            if (!isValidNum(priceSort)) return res.status(400).send({ status: false, message: "priceSort should be number " })
+            //if (!isValidNum(priceSort)) return res.status(400).send({ status: false, message: "priceSort should be number " })
             priceSort = priceSort.toString().trim()
             if (!(priceSort == '-1' || priceSort == '1')) {
                 return res.status(400).send({ status: false, message: `value of priceSort must be 1 or -1 ` })
